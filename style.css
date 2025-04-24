@@ -210,7 +210,7 @@ button:hover {
 #Total {
     font-size: 20px;
     margin: 10px 0;
-    width: 30%;
+    width: 100%;
     color: #ffffff;
     text-align: fixed;
     position: absolute;
@@ -219,4 +219,9 @@ button:hover {
     padding-bottom: 10px;
     text-align: center;
     background-color: #ed0030;
+}
+.legal{
+background-color: #ed0030;  
+color: #f1f1f1; 
+border: 4px; 
 }

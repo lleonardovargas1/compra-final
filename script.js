@@ -22,35 +22,28 @@ const produtos = [
         imagem: "https://lncimg.lance.com.br/cdn-cgi/image/width=950,quality=75,fit=pad,format=webp/uploads/2025/04/messi-inter-miami-scaled-aspect-ratio-512-320.jpg"
     },
     {
-        titulo: "CristianoRonaldo",
-        preco: preco.cristianoRonaldo, // Corrigido: apenas uma definição
+        titulo: "cris",
+        preco: preco.cristianoRonaldo, 
         imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdhHe79aHGHO5SfYZ01rniGOn7--_yPBXC4HIlynkunrmLLU3rli-La4uyaHQq76-ywBUL6RDQ_qzZ4FxW39LM4ERCN9balNn4FJwRUQ"
     }
 ];
  
-// Array para armazenar os produtos adicionados à cesta
+ 
 const produtosNaCesta = [];
- 
-// Seleciona o container onde os produtos serão exibidos
 const container = document.getElementById('container');
- 
-// Seleciona os elementos necessários
 const listaC = document.querySelector('.listaC');
 const overlay = document.querySelector('.overlay');
  
-// Função para mostrar o carrinho
 function mostrarCarrinho() {
     listaC.classList.add('mostrar');
     overlay.classList.add('mostrar');
 }
  
-// Função para ocultar o carrinho
 function ocultarCarrinho() {
     listaC.classList.remove('mostrar');
     overlay.classList.remove('mostrar');
 }
  
-// Função para adicionar os produtos dinamicamente ao container
 function adicionarProdutosAoContainer() {
     produtos.forEach((produto, index) => {
         const divProduto = document.createElement('div');
@@ -64,65 +57,60 @@ function adicionarProdutosAoContainer() {
         container.appendChild(divProduto);
     });
  
-    // Adiciona evento de clique aos botões "Comprar"
     const botoesComprar = document.querySelectorAll('.comprar');
     botoesComprar.forEach(botao => {
         botao.addEventListener('click', (e) => {
             const index = e.target.getAttribute('data-index');
             adicionarProdutoNaCesta(index);
+            mostrarCarrinho();
         });
     });
 }
  
-// Função para adicionar um produto à cesta
 function adicionarProdutoNaCesta(index) {
     const produto = produtos[index];
     const produtoExistente = produtosNaCesta.find(p => p.titulo === produto.titulo);
- 
     if (produtoExistente) {
-        produtoExistente.quantidade += 1; // Incrementa a quantidade se o produto já estiver na cesta
+        produtoExistente.quantidade++;
     } else {
-        produtosNaCesta.push({ ...produto, quantidade: 1 }); // Adiciona o produto com quantidade inicial 1
+        produtosNaCesta.push({ ...produto, quantidade: 1 }); // Inicializa com quantidade 1
     }
     atualizarListaC();
 }
  
-// Função para atualizar a exibição da listaC
 function atualizarListaC() {
-    const listaC = document.querySelector('.listaC');
- 
-    // Remove os itens antigos (exceto o header)
     const itensExistentes = listaC.querySelectorAll('.item-cesta');
     itensExistentes.forEach(item => item.remove());
  
-    // Adiciona cada produto na lista
     produtosNaCesta.forEach((produto, index) => {
         const item = document.createElement('div');
         item.classList.add('item-cesta');
         item.innerHTML = `
             <p><strong>${produto.titulo}</strong></p>
-            <p>R$ ${produto.preco.toFixed( )} x ${produto.quantidade}</p>
-            <p>
-                <button class="diminuir" data-index="${index}">-</button>
+            <p>R$ ${produto.preco.toFixed(2)}</p>
+            <p class="legal"> <b>R$ ${(produto.preco * produto.quantidade).toFixed(2)}<b></p>
+            <p><button class="diminuir" data-index="${index}">-</button>
                 ${produto.quantidade}
                 <button class="aumentar" data-index="${index}">+</button>
-            </p>
-            <button class="remover" data-index="${index}">Remover</button>
+            </p><button class="remover" data-index="${index}">Remover</button>
         `;
         listaC.appendChild(item);
     });
  
-    // Adiciona funcionalidade de aumentar a quantidade
-    const botoesAumentar = document.querySelectorAll('.aumentar');
-    botoesAumentar.forEach(botao => {
-        botao.addEventListener('click', (e) => {
-            const index = e.target.getAttribute('data-index');
-            produtosNaCesta[index].quantidade += 1;
-            atualizarListaC();
-        });
-    });
+    // Recalcula o total
+    const precoTotal = produtosNaCesta.reduce((total, produto) => {
+        return total + produto.preco * produto.quantidade;
+    }, 0);
  
-    // Adiciona funcionalidade de diminuir a quantidade
+    let totalDiv = document.querySelector('.total-preco');
+    if (!totalDiv) {
+        totalDiv = document.createElement('div');
+        totalDiv.classList.add('total-preco');
+        listaC.appendChild(totalDiv);
+    }
+    totalDiv.innerHTML = `<h3 id="Total">Total: R$ ${precoTotal.toFixed(2)}</h3>`;
+ 
+    // Atualiza os botões de diminuir, aumentar e remover
     const botoesDiminuir = document.querySelectorAll('.diminuir');
     botoesDiminuir.forEach(botao => {
         botao.addEventListener('click', (e) => {
@@ -136,21 +124,15 @@ function atualizarListaC() {
         });
     });
  
-    // Calcula o total dos produtos na cesta
-    const precoTotal = produtosNaCesta.reduce((total, produto) => {
-        return total + produto.preco * produto.quantidade;
-    }, 0);
+    const botoesAumentar = document.querySelectorAll('.aumentar');
+    botoesAumentar.forEach(botao => {
+        botao.addEventListener('click', (e) => {
+            const index = e.target.getAttribute('data-index');
+            produtosNaCesta[index].quantidade += 1;
+            atualizarListaC();
+        });
+    });
  
-    // Atualiza ou cria o elemento do total
-    let totalDiv = document.querySelector('.total-preco');
-    if (!totalDiv) {
-        totalDiv = document.createElement('div');
-        totalDiv.classList.add('total-preco');
-        listaC.appendChild(totalDiv);
-    }
-    totalDiv.innerHTML = `<h3 id="Total">Total: R$ ${precoTotal.toFixed()}</h3>`;
- 
-    // Adicionei a  funcionalidade de remoção
     const botoesRemover = document.querySelectorAll('.remover');
     botoesRemover.forEach(botao => {
         botao.addEventListener('click', (e) => {
@@ -161,22 +143,8 @@ function atualizarListaC() {
     });
 }
  
- 
-function adicionarEventosComprar() {
-    const botoesComprar = document.querySelectorAll('.comprar');
-    botoesComprar.forEach(botao => {
-        botao.addEventListener('click', (e) => {
-            const index = e.target.getAttribute('data-index');
-            adicionarProdutoNaCesta(index);
-            mostrarCarrinho();
-        });
-    });
-}
- 
- 
 document.querySelector('.excluir').addEventListener('click', ocultarCarrinho);
 overlay.addEventListener('click', ocultarCarrinho);
  
- 
 adicionarProdutosAoContainer();
-adicionarEventosComprar();
+ 
